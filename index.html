@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>יום הולדת לעומרי!</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Floating balloons -->
+  <div class="balloons" aria-hidden="true">
+    <span class="balloon balloon-1">🎈</span>
+    <span class="balloon balloon-2">🎈</span>
+    <span class="balloon balloon-3">🎈</span>
+    <span class="balloon balloon-4">🎈</span>
+    <span class="balloon balloon-5">🎈</span>
+    <span class="balloon balloon-6">🎈</span>
+    <span class="balloon balloon-7">🎈</span>
+    <span class="balloon balloon-8">🎈</span>
+  </div>
+
+  <!-- Confetti container (JS fills this) -->
+  <div id="confetti-container" aria-hidden="true"></div>
+
+  <!-- Main content -->
+  <main class="invitation">
+    <section class="hero">
+      <div class="decorations-top" aria-hidden="true">
+        <span class="deco deco-star">⭐</span>
+        <span class="deco deco-cake">🎂</span>
+        <span class="deco deco-star">⭐</span>
+      </div>
+
+      <h1 class="greeting animate-in">מוזמנים לחגוג!</h1>
+
+      <div class="name-badge animate-in delay-1">
+        <span class="party-hat" aria-hidden="true">🎉</span>
+        <h2 class="child-name">עומרי</h2>
+        <span class="party-hat" aria-hidden="true">🎉</span>
+      </div>
+
+      <p class="age animate-in delay-2">בן <span class="age-number">4</span>!</p>
+
+      <div class="decorations-bottom" aria-hidden="true">
+        <span class="deco deco-gift">🎁</span>
+        <span class="deco deco-confetti">🎊</span>
+        <span class="deco deco-gift">🎁</span>
+      </div>
+    </section>
+
+    <section class="details animate-in delay-3">
+      <div class="detail-bubbles">
+        <div class="bubble bubble-date">
+          <span class="bubble-icon">📅</span>
+          <span class="bubble-text">יום שישי, 10 באפריל</span>
+        </div>
+        <div class="bubble bubble-time">
+          <span class="bubble-icon">🕐</span>
+          <span class="bubble-text">בשעה 16:00</span>
+        </div>
+        <div class="bubble bubble-location">
+          <span class="bubble-icon">📍</span>
+          <span class="bubble-text">הכתובת תשלח בהמשך</span>
+        </div>
+      </div>
+      <div class="rsvp-bubble">נשמח לאשר הגעה 💛</div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
