@@ -14,7 +14,9 @@
       "Bash(curl -svL -A \"Mozilla/5.0\" \"https://freesvg.org/download/45655\")",
       "Bash(curl -sL -A \"Mozilla/5.0\" \"https://freesvg.org/download/45655\")",
       "Bash(curl -sL \"https://www.svgrepo.com/download/325796/party-confetti.svg\" -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\)\")",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npm init:*)",
+      "Bash(npm install:*)"
     ]
   }
 }
