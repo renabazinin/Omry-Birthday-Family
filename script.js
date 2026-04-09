@@ -1,11 +1,19 @@
 document.addEventListener('DOMContentLoaded', function () {
-  createConfettiBurst();
+  // Confetti after content reveal
+  setTimeout(function () { createConfettiBurst(); }, 2000);
+  setTimeout(function () { createConfettiBurst(25); }, 2800);
+
+  // Starburst on age badge after drop animation lands
+  setTimeout(function () {
+    var badge = document.querySelector('.age-badge');
+    if (badge) badge.classList.add('landed');
+  }, 1500);
 });
 
-function createConfettiBurst() {
+function createConfettiBurst(count) {
   var container = document.getElementById('confetti-container');
   var colors = ['#f72585', '#b5179e', '#7209b7', '#667eea', '#4cc9f0', '#4361ee', '#ff6b9d', '#F4C063', '#43bb4e'];
-  var particleCount = 60;
+  var particleCount = count || 60;
   var particles = [];
 
   // SVG shape templates

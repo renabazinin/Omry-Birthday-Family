@@ -18,7 +18,8 @@
       "Bash(npm init:*)",
       "Bash(npm install:*)",
       "Bash(ffmpeg -version)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(npx openspec:*)"
     ]
   }
 }

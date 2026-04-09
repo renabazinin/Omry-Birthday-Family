@@ -13,7 +13,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   const WIDTH = 360;
   const HEIGHT = 640;
   const FPS = 12;
-  const DURATION_SEC = 4.5;
+  const DURATION_SEC = 5.5;
   const FRAME_COUNT = Math.ceil(FPS * DURATION_SEC);
   const FRAME_DELAY = 1000 / FPS;
 
@@ -61,15 +61,9 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   // Use ffmpeg directly for the two-pass palette approach
   const palettePath = path.join(framesDir, 'palette.png').replace(/\\/g, '/');
 
-  // Pass 1: generate optimal palette from frames
+  // Single-pass GIF encoding (compatible with older ffmpeg)
   execSync(
-    `"${ffmpegPath}" -y -framerate ${FPS} -i "${inputPattern}" -vf "fps=${FPS},scale=320:-1:flags=lanczos,palettegen=max_colors=128:stats_mode=diff" "${palettePath}"`,
-    { stdio: 'inherit' }
-  );
-
-  // Pass 2: encode GIF using the palette
-  execSync(
-    `"${ffmpegPath}" -y -framerate ${FPS} -i "${inputPattern}" -i "${palettePath}" -lavfi "fps=${FPS},scale=320:-1:flags=lanczos [x]; [x][1:v] paletteuse=dither=sierra2_4a" -loop 0 "${outGif.replace(/\\/g, '/')}"`,
+    `"${ffmpegPath}" -y -framerate ${FPS} -i "${inputPattern}" -vf "fps=${FPS},scale=320:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128:stats_mode=diff[p];[s1][p]paletteuse=dither=sierra2_4a" -loop 0 "${outGif.replace(/\\/g, '/')}"`,
     { stdio: 'inherit' }
   );
 
