@@ -3,7 +3,18 @@
     "allow": [
       "Bash(openspec new:*)",
       "Bash(openspec status:*)",
-      "Bash(openspec instructions:*)"
+      "Bash(openspec instructions:*)",
+      "Bash(node:*)",
+      "WebFetch(domain:www.svgrepo.com)",
+      "WebFetch(domain:publicdomainvectors.org)",
+      "WebFetch(domain:freesvg.org)",
+      "Bash(curl -sL \"https://freesvg.org/download/45655\" -o /tmp/confetti.svg)",
+      "Read(//tmp/**)",
+      "Bash(curl -sL \"https://freesvg.org/download/158205\" -o /tmp/partyhat.svg)",
+      "Bash(curl -svL -A \"Mozilla/5.0\" \"https://freesvg.org/download/45655\")",
+      "Bash(curl -sL -A \"Mozilla/5.0\" \"https://freesvg.org/download/45655\")",
+      "Bash(curl -sL \"https://www.svgrepo.com/download/325796/party-confetti.svg\" -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\)\")",
+      "Bash(ls:*)"
     ]
   }
 }
