@@ -16,7 +16,9 @@
       "Bash(curl -sL \"https://www.svgrepo.com/download/325796/party-confetti.svg\" -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\)\")",
       "Bash(ls:*)",
       "Bash(npm init:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(ffmpeg -version)",
+      "WebSearch"
     ]
   }
 }

@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
   createConfettiBurst();
-  initSoundButton();
 });
 
 function createConfettiBurst() {
@@ -77,72 +76,4 @@ function createConfettiBurst() {
   setTimeout(function () {
     container.innerHTML = '';
   }, 3500);
-}
-
-function initSoundButton() {
-  var btn = document.querySelector('.sound-btn');
-  if (!btn) return;
-
-  btn.addEventListener('click', function () {
-    playPartyHorn();
-  });
-}
-
-function playPartyHorn() {
-  // Generate a short party horn sound using Web Audio API
-  var ctx = new (window.AudioContext || window.webkitAudioContext)();
-  var duration = 0.6;
-
-  // Main horn tone (sawtooth for buzzy party horn feel)
-  var osc1 = ctx.createOscillator();
-  osc1.type = 'sawtooth';
-  osc1.frequency.setValueAtTime(440, ctx.currentTime);
-  osc1.frequency.linearRampToValueAtTime(580, ctx.currentTime + 0.1);
-  osc1.frequency.linearRampToValueAtTime(520, ctx.currentTime + duration);
-
-  // Second harmonic for richness
-  var osc2 = ctx.createOscillator();
-  osc2.type = 'square';
-  osc2.frequency.setValueAtTime(880, ctx.currentTime);
-  osc2.frequency.linearRampToValueAtTime(1160, ctx.currentTime + 0.1);
-  osc2.frequency.linearRampToValueAtTime(1040, ctx.currentTime + duration);
-
-  // Gain envelope
-  var gain = ctx.createGain();
-  gain.gain.setValueAtTime(0, ctx.currentTime);
-  gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.05);
-  gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.3);
-  gain.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
-
-  var gain2 = ctx.createGain();
-  gain2.gain.setValueAtTime(0, ctx.currentTime);
-  gain2.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 0.05);
-  gain2.gain.linearRampToValueAtTime(0.03, ctx.currentTime + 0.3);
-  gain2.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
-
-  // Noise burst for the initial "pop"
-  var noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate);
-  var noiseData = noiseBuffer.getChannelData(0);
-  for (var i = 0; i < noiseData.length; i++) {
-    noiseData[i] = (Math.random() * 2 - 1) * 0.3;
-  }
-  var noise = ctx.createBufferSource();
-  noise.buffer = noiseBuffer;
-  var noiseGain = ctx.createGain();
-  noiseGain.gain.setValueAtTime(0.2, ctx.currentTime);
-  noiseGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.08);
-
-  osc1.connect(gain);
-  osc2.connect(gain2);
-  noise.connect(noiseGain);
-  gain.connect(ctx.destination);
-  gain2.connect(ctx.destination);
-  noiseGain.connect(ctx.destination);
-
-  osc1.start(ctx.currentTime);
-  osc2.start(ctx.currentTime);
-  noise.start(ctx.currentTime);
-  osc1.stop(ctx.currentTime + duration);
-  osc2.stop(ctx.currentTime + duration);
-  noise.stop(ctx.currentTime + 0.08);
 }

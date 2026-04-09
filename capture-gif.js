@@ -1,18 +1,31 @@
 const puppeteer = require('puppeteer');
-const GIFEncoder = require('gif-encoder-2');
-const { createCanvas, Image } = require('canvas');
+const ffmpeg = require('fluent-ffmpeg');
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
+
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 (async () => {
-  const WIDTH = 400;
-  const HEIGHT = 720;
-  const FPS = 15;
-  const DURATION_SEC = 4.5; // capture the full entrance + confetti
+  const WIDTH = 360;
+  const HEIGHT = 640;
+  const FPS = 12;
+  const DURATION_SEC = 4.5;
   const FRAME_COUNT = Math.ceil(FPS * DURATION_SEC);
   const FRAME_DELAY = 1000 / FPS;
+
+  const framesDir = path.join(__dirname, '_frames');
+  const outGif = path.join(__dirname, 'invitation.gif');
+  const outMp4 = path.join(__dirname, 'invitation.mp4');
+
+  // Clean up / create frames dir
+  if (fs.existsSync(framesDir)) {
+    fs.rmSync(framesDir, { recursive: true });
+  }
+  fs.mkdirSync(framesDir);
 
   const htmlPath = 'file://' + path.resolve(__dirname, 'index.html').replace(/\\/g, '/');
 
@@ -25,16 +38,13 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   const page = await browser.newPage();
   await page.setViewport({ width: WIDTH, height: HEIGHT, deviceScaleFactor: 1 });
   await page.goto(htmlPath, { waitUntil: 'domcontentloaded' });
-
-  // Let the page start rendering
-  await sleep(100);
+  await sleep(150);
 
   console.log(`Capturing ${FRAME_COUNT} frames at ${FPS} fps...`);
 
-  const frames = [];
   for (let i = 0; i < FRAME_COUNT; i++) {
-    const buf = await page.screenshot({ type: 'png' });
-    frames.push(buf);
+    const framePath = path.join(framesDir, `frame_${String(i).padStart(4, '0')}.png`);
+    await page.screenshot({ path: framePath, type: 'png' });
     if (i % 10 === 0) {
       console.log(`  frame ${i + 1}/${FRAME_COUNT}`);
     }
@@ -42,32 +52,63 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   }
 
   await browser.close();
-  console.log('Browser closed. Encoding GIF...');
+  console.log('Browser closed.');
 
-  // Encode GIF
-  const encoder = new GIFEncoder(WIDTH, HEIGHT, 'neuquant', true);
-  encoder.setDelay(Math.round(1000 / FPS));
-  encoder.setQuality(10);
-  encoder.setRepeat(0); // loop forever
-  encoder.start();
+  // --- GIF via ffmpeg with palette optimization ---
+  console.log('\nEncoding GIF (ffmpeg + palette optimization)...');
+  const inputPattern = path.join(framesDir, 'frame_%04d.png').replace(/\\/g, '/');
 
-  const canvas = createCanvas(WIDTH, HEIGHT);
-  const ctx = canvas.getContext('2d');
+  // Use ffmpeg directly for the two-pass palette approach
+  const palettePath = path.join(framesDir, 'palette.png').replace(/\\/g, '/');
 
-  for (let i = 0; i < frames.length; i++) {
-    const img = new Image();
-    img.src = frames[i];
-    ctx.drawImage(img, 0, 0, WIDTH, HEIGHT);
-    encoder.addFrame(ctx);
-    if (i % 10 === 0) {
-      console.log(`  encoding frame ${i + 1}/${frames.length}`);
-    }
-  }
+  // Pass 1: generate optimal palette from frames
+  execSync(
+    `"${ffmpegPath}" -y -framerate ${FPS} -i "${inputPattern}" -vf "fps=${FPS},scale=320:-1:flags=lanczos,palettegen=max_colors=128:stats_mode=diff" "${palettePath}"`,
+    { stdio: 'inherit' }
+  );
 
-  encoder.finish();
+  // Pass 2: encode GIF using the palette
+  execSync(
+    `"${ffmpegPath}" -y -framerate ${FPS} -i "${inputPattern}" -i "${palettePath}" -lavfi "fps=${FPS},scale=320:-1:flags=lanczos [x]; [x][1:v] paletteuse=dither=sierra2_4a" -loop 0 "${outGif.replace(/\\/g, '/')}"`,
+    { stdio: 'inherit' }
+  );
 
-  const outPath = path.join(__dirname, 'invitation.gif');
-  const buffer = encoder.out.getData();
-  fs.writeFileSync(outPath, buffer);
-  console.log(`Done! GIF saved to: ${outPath} (${(buffer.length / 1024 / 1024).toFixed(1)} MB)`);
+  const gifSize = fs.statSync(outGif).size;
+  console.log(`GIF saved: ${outGif} (${(gifSize / 1024).toFixed(0)} KB)`);
+
+  // --- MP4 for WhatsApp "send as GIF" on mobile ---
+  console.log('\nEncoding MP4 (WhatsApp mobile compatible)...');
+  await new Promise((resolve, reject) => {
+    ffmpeg()
+      .input(path.join(framesDir, 'frame_%04d.png'))
+      .inputFPS(FPS)
+      .noAudio()
+      .videoCodec('libx264')
+      .outputOptions([
+        '-profile:v baseline',
+        '-level 3.0',
+        '-pix_fmt yuv420p',
+        '-crf 26',
+        '-preset slow',
+        '-movflags +faststart',
+        '-vf scale=480:-2',
+      ])
+      .output(outMp4)
+      .on('end', resolve)
+      .on('error', reject)
+      .on('stderr', (line) => {
+        if (line.includes('frame=')) process.stdout.write('\r  ' + line.trim());
+      })
+      .run();
+  });
+
+  const mp4Size = fs.statSync(outMp4).size;
+  console.log(`\nMP4 saved: ${outMp4} (${(mp4Size / 1024).toFixed(0)} KB)`);
+
+  // Clean up frames
+  fs.rmSync(framesDir, { recursive: true });
+
+  console.log('\n=== Done! ===');
+  console.log(`  invitation.gif  (${(gifSize / 1024).toFixed(0)} KB) — send as file/document on WhatsApp`);
+  console.log(`  invitation.mp4  (${(mp4Size / 1024).toFixed(0)} KB) — use "GIF" toggle on mobile WhatsApp`);
 })();
